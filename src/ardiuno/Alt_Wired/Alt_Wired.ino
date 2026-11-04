@@ -1,22 +1,30 @@
-const byte joystickXPin = 39;
-const byte joystickYPin = 36;
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEScan.h>
+#include <BLEClient.h>
 
-int xMin = 4095, xMax = 0, yMin = 4095, yMax = 0;
-
-void setup()
-{
+void setup() {
   Serial.begin(115200);
-  analogSetAttenuation(ADC_11db);
+  delay(1000);
+  Serial.println("ESP32 BLE Client Initialized. Scanning for Pico W...");
+  
+  BLEDevice::init("");
+  BLEScan* pBLEScan = BLEDevice::getScan();
+  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+  pBLEScan->setActiveScan(true);
+  pBLEScan->start(30);
 }
 
-void loop()
-{
-  int x = analogRead(joystickXPin);
-  int y = analogRead(joystickYPin);
+void loop() {
+  if (doConnect == true) {
+    if (connectToServer()) {
+      Serial.println("Connected to the Pico W!");
+    }
+    doConnect = false;
+  }
 
-  xMin = min(xMin, x); xMax = max(xMax, x);
-  yMin = min(yMin, y); yMax = max(yMax, y);
-
-  Serial.printf("X:%d (%d..%d)  Y:%d (%d..%d)\n", x, xMin, xMax, y, yMin, yMax);
-  delay(50);
+  if (!connected && !doConnect) {
+    BLEDevice::getScan()->start(5, false);
+  }
+  delay(1000);
 }
