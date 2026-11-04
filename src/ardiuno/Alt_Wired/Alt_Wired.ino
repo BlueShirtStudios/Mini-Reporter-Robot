@@ -1,30 +1,18 @@
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEScan.h>
-#include <BLEClient.h>
+#include "BluetoothClient.h"
+
+BluetoothClient picoClient(
+    "19b10000-e8f2-537e-4f6c-d104768a1214", 
+    "19b10001-e8f2-537e-4f6c-d104768a1214", 
+    "PicoW_Controller"
+);
 
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  Serial.println("ESP32 BLE Client Initialized. Scanning for Pico W...");
-  
-  BLEDevice::init("");
-  BLEScan* pBLEScan = BLEDevice::getScan();
-  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
-  pBLEScan->setActiveScan(true);
-  pBLEScan->start(30);
+  picoClient.begin();
 }
 
 void loop() {
-  if (doConnect == true) {
-    if (connectToServer()) {
-      Serial.println("Connected to the Pico W!");
-    }
-    doConnect = false;
-  }
-
-  if (!connected && !doConnect) {
-    BLEDevice::getScan()->start(5, false);
-  }
+  picoClient.update();
   delay(1000);
 }
